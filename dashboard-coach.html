@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportClub - Panel Coach</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .perfil-coach nav a:hover { border-bottom-color: #2e7d32; }
+        .perfil-coach .btn { background: #2e7d32; color: white; }
+        .perfil-coach .btn:hover { background: #1b5e20; }
+    </style>
+</head>
+<body class="perfil-coach">
+    <header class="main-header">
+        <div class="logo-container">
+            <img src="img/logo.png" alt="Logo" class="logo-img">
+        </div>
+        <nav>
+            <a href="dashboard-coach.html">Inicio</a>
+            <a href="#">Alumnos</a>
+            <a href="#">Clases</a>
+        </nav>
+    </header>
+
+    <div class="dashboard-container">
+        <h2>Panel de Coach | Laura Gómez</h2>
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Mis alumnos</h3>
+                <ul>
+                    <li>Juan Pérez - juan@mail.com</li>
+                    <li>Ana López - ana@mail.com</li>
+                    <li>Carlos Ruiz - carlos@mail.com</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Clases asignadas</h3>
+                <ul>
+                    <li>Entrenamiento funcional - Martes 19:00</li>
+                    <li>Boxeo - Jueves 18:00</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Horarios del coach</h3>
+                <ul>
+                    <li>Lunes 10:00 - 13:00</li>
+                    <li>Martes 16:00 - 20:00</li>
+                    <li>Jueves 16:00 - 20:00</li>
+                </ul>
+            </div>
+        </div>
+        <div class="botones-perfil">
+            <button class="btn" onclick="alert('Editar perfil coach')">Editar perfil</button>
+            <button class="btn btn-secundario" onclick="window.location.href='login.html'">Cerrar sesión</button>
+        </div>
+    </div>
+</body>
+</html>

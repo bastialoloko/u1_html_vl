@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportClub - Mi panel (Usuario)</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Diferenciación usuario: azul */
+        .perfil-usuario nav a:hover {
+            border-bottom-color: #0077b6;
+        }
+        .perfil-usuario .btn {
+            background: #0077b6;
+            color: white;
+        }
+        .perfil-usuario .btn:hover {
+            background: #005f8c;
+        }
+    </style>
+</head>
+<body class="perfil-usuario">
+    <header class="main-header">
+        <div class="logo-container">
+            <img src="img/logo.png" alt="Logo" class="logo-img">
+        </div>
+        <nav>
+            <a href="dashboard-usuario.html">Inicio</a>
+            <a href="#">Reservas</a>
+            <a href="#">Perfil</a>
+        </nav>
+    </header>
+
+    <div class="dashboard-container">
+        <h2>Bienvenido, Juan Pérez</h2>
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Información personal</h3>
+                <p><strong>Nombre:</strong> Juan Pérez</p>
+                <p><strong>Correo:</strong> juan@example.com</p>
+                <p><strong>Deporte:</strong> Fútbol</p>
+            </div>
+            <div class="card">
+                <h3>Mis reservas</h3>
+                <ul>
+                    <li>Crossfit - Lunes 18:00</li>
+                    <li>Spinning - Miércoles 19:00</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Clases disponibles</h3>
+                <ul>
+                    <li>Yoga</li>
+                    <li>Funcional</li>
+                    <li>Spinning</li>
+                    <li>Boxeo</li>
+                </ul>
+            </div>
+        </div>
+        <div class="botones-perfil">
+            <button class="btn" onclick="alert('Editar perfil (simulado)')">Editar perfil</button>
+            <button class="btn btn-secundario" onclick="window.location.href='login.html'">Cerrar sesión</button>
+        </div>
+    </div>
+</body>
+</html>

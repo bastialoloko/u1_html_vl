@@ -3,35 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Club Deportivo - Iniciar sesión</title>
+    <title>SportClub - Login</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <h1 class="logo">Club Deportivo</h1>
-            <h2>Iniciar sesión</h2>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="email">Correo electrónico</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Contraseña</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <button type="submit" class="btn">Iniciar sesión</button>
-                <div class="links">
-                    <a href="recover.html">¿Olvidaste tu contraseña?</a>
-                    <a href="register.html">Registrarse!!!!!</a>
-                </div>
-            </form>
+    <header class="main-header">
+        <div class="logo-container">
+            <img src="img/logo.png" alt="Logo" class="logo-img">
         </div>
+        <nav>
+            <a href="index.html">Inicio</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2>Iniciar sesión</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Correo electrónico</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="btn">Ingresar</button>
+            <div class="links">
+                <a href="recover.html">¿Olvidaste tu contraseña?</a>
+                <a href="register.html">Registrarse</a>
+            </div>
+        </form>
     </div>
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            alert('Inicio de sesión simulado. (Validación local)');
+            var email = document.getElementById('email').value;
+            if (email.includes('admin')) window.location.href = "dashboard-admin.html";
+            else if (email.includes('coach')) window.location.href = "dashboard-coach.html";
+            else window.location.href = "dashboard-usuario.html";
         });
     </script>
 </body>

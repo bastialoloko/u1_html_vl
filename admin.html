@@ -24,26 +24,47 @@
             color: #dc3545;
             font-size: 0.85rem;
         }
+
+        .wide-card {
+            margin: 0;
+            width: 100%;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table th,
+        .table td {
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 768px) {
+
+            .table th,
+            .table td {
+                white-space: normal;
+            }
+        }
     </style>
 </head>
 
 <body>
     <header class="main-header">
-        <div class="logo-container"><img src="img/logo.png" alt="Logo" class="logo-img"></div>
-        <nav>
-            <a href="index.html">Inicio</a>
-        </nav>
+        <div class="logo-container"><a href="index.html"><img src="img/logo.png" alt="Logo" class="logo-img"></a></div>
+        <nav><a href="perfil.html">Mi perfil</a></nav>
     </header>
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+
+    <div class="container-fluid mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
             <h2>Gestión de Usuarios</h2>
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#userModal"
-                onclick="openCreateModal()">Nuevo Usuario</button>
+            <button class="btn btn-success" id="newUserBtn">Nuevo Usuario</button>
         </div>
-        <div class="card shadow">
-            <div class="card-body">
+        <div class="card shadow wide-card">
+            <div class="card-body p-0 p-md-3">
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table class="table table-striped mb-0">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -61,12 +82,13 @@
         </div>
     </div>
 
-    <div class="modal fade" id="userModal" tabindex="-1">
+    <!-- Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalTitle">Crear Usuario</h5><button type="button" class="btn-close"
-                        data-bs-dismiss="modal"></button>
+                        data-bs-dismiss="modal" id="closeModalBtn"></button>
                 </div>
                 <div class="modal-body">
                     <form id="userForm">
@@ -93,7 +115,7 @@
                     </form>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-secondary"
-                        data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary"
+                        id="cancelModalBtn">Cancelar</button><button type="button" class="btn btn-primary"
                         id="saveUserBtn">Guardar</button></div>
             </div>
         </div>
@@ -104,11 +126,11 @@
         const API_URL = 'http://localhost:3000/api';
         let usersList = [];
         let editingId = null;
+        let userModal = null;
 
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
 
-        // Verificar rol admin
         fetch(`${API_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } })
             .then(res => res.json())
             .then(result => {
@@ -118,6 +140,18 @@
 
         function getToken() { return localStorage.getItem('token'); }
         function logout() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; }
+
+        function closeAndCleanModal() {
+            if (userModal) {
+                userModal.hide();
+                // Eliminar cualquier backdrop residual
+                setTimeout(() => {
+                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                }, 150);
+            }
+        }
 
         async function loadUsers() {
             const token = getToken();
@@ -141,7 +175,17 @@
             });
         }
 
-        function openCreateModal() { editingId = null; document.getElementById('modalTitle').innerText = 'Crear Usuario'; document.getElementById('userForm').reset(); document.getElementById('passwordGroup').style.display = 'block'; document.getElementById('confirmGroup').style.display = 'block'; new bootstrap.Modal(document.getElementById('userModal')).show(); }
+        function openCreateModal() {
+            editingId = null;
+            document.getElementById('modalTitle').innerText = 'Crear Usuario';
+            document.getElementById('userForm').reset();
+            document.getElementById('passwordGroup').style.display = 'block';
+            document.getElementById('confirmGroup').style.display = 'block';
+            if (userModal) userModal.dispose();
+            userModal = new bootstrap.Modal(document.getElementById('userModal'), { backdrop: 'static', keyboard: false });
+            userModal.show();
+        }
+
         async function editUser(id) {
             editingId = id;
             const user = usersList.find(u => u.id == id);
@@ -151,8 +195,11 @@
             document.getElementById('passwordGroup').style.display = 'none';
             document.getElementById('confirmGroup').style.display = 'none';
             document.getElementById('modalTitle').innerText = 'Editar Usuario';
-            new bootstrap.Modal(document.getElementById('userModal')).show();
+            if (userModal) userModal.dispose();
+            userModal = new bootstrap.Modal(document.getElementById('userModal'), { backdrop: 'static', keyboard: false });
+            userModal.show();
         }
+
         document.getElementById('saveUserBtn').onclick = async () => {
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
@@ -175,18 +222,26 @@
             try {
                 const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body) });
                 if (!res.ok) throw new Error('Error');
-                bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
+                closeAndCleanModal();
                 loadUsers();
             } catch (err) { alert('Error al guardar'); }
         };
+
         async function deleteUser(id) {
             if (!confirm('¿Eliminar usuario?')) return;
             const token = getToken();
             await fetch(`${API_URL}/users/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
             loadUsers();
         }
-        document.getElementById('logoutAdmin')?.addEventListener('click', (e) => { e.preventDefault(); logout(); });
-        loadUsers();
+
+        document.getElementById('newUserBtn').onclick = openCreateModal;
+        document.getElementById('closeModalBtn').onclick = closeAndCleanModal;
+        document.getElementById('cancelModalBtn').onclick = closeAndCleanModal;
+
+        window.addEventListener('load', () => {
+            userModal = new bootstrap.Modal(document.getElementById('userModal'), { backdrop: 'static', keyboard: false });
+            loadUsers();
+        });
     </script>
 </body>
 

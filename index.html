@@ -1,37 +1,81 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SportClub | Inicio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .beneficios-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .beneficio-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            max-width: 220px;
+            flex: 1 1 200px;
+        }
+
+        .beneficio-card strong {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .vision-section {
+            margin-top: 2rem;
+        }
+    </style>
 </head>
+
 <body>
     <header class="main-header">
         <div class="logo-container">
-            <img src="img/logo.png" alt="Logo" class="logo-img">
+            <a href="index.html"><img src="img/logo.png" alt="Logo" class="logo-img"></a>
         </div>
         <nav>
-            <a href="index.html">Inicio</a>
             <a href="login.html">Acceder</a>
         </nav>
     </header>
 
-    <div class="container" style="max-width: 800px; text-align: center;">
+    <div class="container" style="max-width: 900px; text-align: center;">
         <h1>Tu mejor versión comienza hoy</h1>
-        <p style="font-size: 1.2rem; margin: 1rem 0;">En SportClub creemos que el deporte transforma cuerpo, mente y estilo de vida. Acompañamos a cada persona sin importar su nivel.</p>
-        
+        <p style="font-size: 1.2rem; margin: 1rem 0;">En SportClub creemos que el deporte transforma cuerpo, mente y
+            estilo de vida. Acompañamos a cada persona sin importar su nivel.</p>
+
         <h2>¿Por qué elegirnos?</h2>
-        <div class="dashboard-grid" style="margin-top: 1rem;">
-            <div class="card"><strong>Entrenadores especializados</strong><br>Guía profesional para lograr tus metas.</div>
-            <div class="card"><strong>Programas personalizados</strong><br>Adaptados a tu ritmo y objetivos.</div>
-            <div class="card" style="text-align: center !important;"><strong>Comunidad motivadora</strong><br>Ambiente que impulsa a dar lo
-                mejor.</div>
+        <div class="beneficios-grid">
+            <div class="beneficio-card">
+                <strong>Entrenadores especializados</strong>
+                Guía profesional para lograr tus metas.
+            </div>
+            <div class="beneficio-card">
+                <strong>Programas personalizados</strong>
+                Adaptados a tu ritmo y objetivos.
+            </div>
+            <div class="beneficio-card">
+                <strong>Comunidad motivadora</strong>
+                Ambiente que impulsa a dar lo mejor.
+            </div>
         </div>
 
-        <h2>Nuestra Visión</h2>
-        <p>Ser el club deportivo referente en formación integral de personas, combinando tecnología, entrenamiento y comunidad para mejorar la calidad de vida.</p>
-
+        <div class="vision-section">
+            <h2>Nuestra Visión</h2>
+            <p>Ser el club deportivo referente en formación integral de personas, combinando tecnología, entrenamiento y
+                comunidad para mejorar la calidad de vida.</p>
+        </div>
     </div>
 </body>
+
 </html>

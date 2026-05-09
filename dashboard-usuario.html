@@ -11,15 +11,6 @@
             border-bottom-color: #0077b6;
         }
 
-        .perfil-usuario .btn {
-            background: #0077b6;
-            color: white;
-        }
-
-        .perfil-usuario .btn:hover {
-            background: #005f8c;
-        }
-
         .dashboard-container {
             max-width: 1400px;
             margin: 2rem auto;
@@ -31,10 +22,10 @@
 <body class="perfil-usuario">
     <header class="main-header">
         <div class="logo-container">
-            <img src="img/logo.png" alt="Logo" class="logo-img">
+            <a href="index.html"><img src="img/logo.png" alt="Logo" class="logo-img"></a>
         </div>
         <nav>
-            <a href="index.html">Inicio</a>
+            <a href="perfil.html">Mi perfil</a>
         </nav>
     </header>
     <div class="dashboard-container">
@@ -63,10 +54,6 @@
                 </ul>
             </div>
         </div>
-        <div class="botones-perfil">
-            <button class="btn" id="editProfileBtn">Editar perfil</button>
-            <button class="btn btn-secundario" id="logoutBtn">Cerrar sesión</button>
-        </div>
     </div>
     <script>
         const API_URL = 'http://localhost:3000/api';
@@ -85,9 +72,6 @@
             } catch (err) { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; }
         }
         loadUserData();
-        document.getElementById('editProfileBtn').onclick = () => window.location.href = 'perfil.html';
-        function cerrarSesion() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; }
-        document.getElementById('logoutBtn').onclick = cerrarSesion;
     </script>
 </body>
 

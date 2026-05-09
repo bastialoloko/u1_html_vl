@@ -20,20 +20,6 @@
             background: #005f8c;
         }
 
-        .avatar-mini {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-left: 10px;
-            border: 1px solid #F2B705;
-        }
-
-        .nav-avatar {
-            display: inline-flex;
-            align-items: center;
-        }
-
         .dashboard-container {
             max-width: 1400px;
             margin: 2rem auto;
@@ -47,13 +33,8 @@
         <div class="logo-container">
             <img src="img/logo.png" alt="Logo" class="logo-img">
         </div>
-        <nav class="nav-avatar">
-            <a href="dashboard-usuario.html">Inicio</a>
-            <a href="perfil.html">Perfil</a>
-            <a href="#" id="logoutLink">Cerrar sesión</a>
-            <img id="avatarNav" class="avatar-mini" src="" alt="Avatar" style="display:none;">
-            <div id="avatarPlaceholderNav" class="avatar-mini"
-                style="display:flex; align-items:center; justify-content:center; background:#e9ecef;">📷</div>
+        <nav>
+            <a href="index.html">Inicio</a>
         </nav>
     </header>
     <div class="dashboard-container">
@@ -82,27 +63,15 @@
                 </ul>
             </div>
         </div>
-        <div class="botones-perfil"><button class="btn" id="editProfileBtn">Editar perfil</button><button
-                class="btn btn-secundario" id="logoutBtn">Cerrar sesión</button></div>
+        <div class="botones-perfil">
+            <button class="btn" id="editProfileBtn">Editar perfil</button>
+            <button class="btn btn-secundario" id="logoutBtn">Cerrar sesión</button>
+        </div>
     </div>
     <script>
         const API_URL = 'http://localhost:3000/api';
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
-
-        function loadAvatar(email) {
-            const stored = localStorage.getItem(`avatar_${email}`);
-            const avatarImg = document.getElementById('avatarNav');
-            const placeholder = document.getElementById('avatarPlaceholderNav');
-            if (stored && stored.startsWith('data:image')) {
-                avatarImg.src = stored;
-                avatarImg.style.display = 'inline-block';
-                placeholder.style.display = 'none';
-            } else {
-                avatarImg.style.display = 'none';
-                placeholder.style.display = 'flex';
-            }
-        }
 
         async function loadUserData() {
             try {
@@ -113,14 +82,12 @@
                 document.getElementById('userName').textContent = user.full_name.split(' ')[0];
                 document.getElementById('displayName').textContent = user.full_name;
                 document.getElementById('displayEmail').textContent = user.email;
-                loadAvatar(user.email);
             } catch (err) { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; }
         }
         loadUserData();
         document.getElementById('editProfileBtn').onclick = () => window.location.href = 'perfil.html';
         function cerrarSesion() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; }
         document.getElementById('logoutBtn').onclick = cerrarSesion;
-        document.getElementById('logoutLink').onclick = (e) => { e.preventDefault(); cerrarSesion(); };
     </script>
 </body>
 

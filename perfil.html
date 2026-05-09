@@ -81,8 +81,10 @@
 <body>
     <header class="main-header">
         <div class="logo-container"><img src="img/logo.png" alt="Logo" class="logo-img"></div>
-        <nav><a href="#" id="backHomeLink">Inicio</a><a href="perfil.html">Perfil</a><a href="#" id="logoutBtn">Cerrar
-                sesión</a></nav>
+        <nav>
+            <a href="#" id="backHomeLink">Regresar al panel</a>
+            <a href="#" id="logoutBtn">Cerrar sesión</a>
+        </nav>
     </header>
     <div class="container mt-4 profile-card">
         <div class="card shadow">
@@ -91,7 +93,7 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <!-- Columna izquierda: foto y datos resumen -->
+                    <!-- Columna izquierda: foto -->
                     <div class="col-md-3 text-center mb-4">
                         <div id="avatarContainer">
                             <img id="avatarImg" class="avatar-img" src="" alt="Foto de perfil" style="display:none;">
@@ -104,7 +106,7 @@
                             <p><strong>Email:</strong> <span id="displayEmail"></span></p>
                         </div>
                     </div>
-                    <!-- Columna derecha: datos editables y seguridad, más ancha -->
+                    <!-- Columna derecha: datos (ancha) -->
                     <div class="col-md-9">
                         <div id="perfilInfo">
                             <div class="mb-3">
@@ -162,7 +164,6 @@
     <script>
         const API_URL = 'http://localhost:3000/api';
         let currentUser = null;
-
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
 
@@ -190,26 +191,19 @@
             loadAvatar(email);
         }
 
-        document.getElementById('changeAvatarBtn').onclick = () => {
-            document.getElementById('avatarInput').click();
-        };
+        document.getElementById('changeAvatarBtn').onclick = () => document.getElementById('avatarInput').click();
         document.getElementById('avatarInput').onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function (ev) {
-                const base64 = ev.target.result;
-                saveAvatar(currentUser.email, base64);
-            };
+            reader.onload = (ev) => saveAvatar(currentUser.email, ev.target.result);
             reader.readAsDataURL(file);
         };
 
         async function fetchUserData() {
             try {
-                const res = await fetch(`${API_URL}/auth/me`, {
-                    headers: { 'Authorization': `Bearer ${getToken()}` }
-                });
-                if (!res.ok) throw new Error('Sesión expirada');
+                const res = await fetch(`${API_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                if (!res.ok) throw new Error();
                 const result = await res.json();
                 currentUser = result.data;
                 displayUser(currentUser);
@@ -266,7 +260,7 @@
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
                     body: JSON.stringify({ full_name: newName, birth_date: newBirth })
                 });
-                if (!res.ok) throw new Error('Error al actualizar');
+                if (!res.ok) throw new Error();
                 const result = await res.json();
                 currentUser = result.data;
                 displayUser(currentUser);
@@ -276,9 +270,7 @@
                 showMessage('profileMessage', err.message, 'danger');
             }
         };
-        document.getElementById('changePasswordBtn').onclick = () => {
-            document.getElementById('changePwdForm').style.display = 'block';
-        };
+        document.getElementById('changePasswordBtn').onclick = () => document.getElementById('changePwdForm').style.display = 'block';
         document.getElementById('cancelPwdBtn').onclick = () => {
             document.getElementById('changePwdForm').style.display = 'none';
             document.getElementById('pwdMessage').classList.add('d-none');
@@ -300,9 +292,9 @@
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
                     body: JSON.stringify({ current_password: current, new_password: newPwd })
                 });
-                if (!res.ok) throw new Error('Error al cambiar contraseña');
+                if (!res.ok) throw new Error();
                 showMessage('pwdMessage', 'Contraseña actualizada correctamente', 'success');
-                setTimeout(() => { document.getElementById('changePwdForm').style.display = 'none'; }, 1500);
+                setTimeout(() => document.getElementById('changePwdForm').style.display = 'none', 1500);
             } catch (err) { showMessage('pwdMessage', err.message, 'danger'); }
         };
         function showMessage(elementId, msg, type) {

@@ -1,11 +1,31 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SportClub - Login</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .error-message {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .input-error {
+            border-color: #dc3545;
+        }
+
+        .main-header {
+            background: var(--morado);
+        }
+    </style>
 </head>
+
 <body>
     <header class="main-header">
         <div class="logo-container">
@@ -16,32 +36,86 @@
         </nav>
     </header>
 
-    <div class="container">
-        <h2>Iniciar sesión</h2>
-        <form id="loginForm">
-            <div class="form-group">
-                <label>Correo electrónico</label>
-                <input type="email" id="email" required>
-            </div>
-            <div class="form-group">
-                <label>Contraseña</label>
-                <input type="password" id="password" required>
-            </div>
-            <button type="submit" class="btn">Ingresar</button>
-            <div class="links">
-                <a href="recover.html">¿Olvidaste tu contraseña?</a>
-                <a href="register.html">Registrarse</a>
-            </div>
-        </form>
+    <div class="container mt-5" style="max-width: 500px;">
+        <div class="card p-4 shadow">
+            <h2 class="text-center mb-4">Iniciar sesión</h2>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Correo electrónico</label>
+                    <input type="email" class="form-control" id="email" required>
+                    <div class="error-message" id="emailError"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <input type="password" class="form-control" id="password" required>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100"
+                    style="background-color: #F2B705; border-color: #F2B705; color: #2E1A47;">Ingresar</button>
+                <div class="text-center mt-3">
+                    <a href="recover.html">¿Olvidaste tu contraseña?</a> |
+                    <a href="register.html">Registrarse</a>
+                </div>
+                <div id="generalError" class="alert alert-danger mt-3 d-none"></div>
+            </form>
+        </div>
     </div>
+
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function (e) {
+        const API_URL = 'http://localhost:3000/api';
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            var email = document.getElementById('email').value;
-            if (email.includes('admin')) window.location.href = "dashboard-admin.html";
-            else if (email.includes('coach')) window.location.href = "dashboard-coach.html";
-            else window.location.href = "dashboard-usuario.html";
+            // Limpiar errores
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            document.querySelectorAll('.form-control').forEach(el => el.classList.remove('input-error'));
+            document.getElementById('generalError').classList.add('d-none');
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            // Validación simple front
+            let hasError = false;
+            if (!email) {
+                document.getElementById('emailError').textContent = 'El correo es obligatorio';
+                document.getElementById('email').classList.add('input-error');
+                hasError = true;
+            } else if (!email.includes('@')) {
+                document.getElementById('emailError').textContent = 'Email inválido';
+                document.getElementById('email').classList.add('input-error');
+                hasError = true;
+            }
+            if (!password) {
+                document.getElementById('passwordError').textContent = 'La contraseña es obligatoria';
+                document.getElementById('password').classList.add('input-error');
+                hasError = true;
+            }
+            if (hasError) return;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || 'Error de autenticación');
+                }
+                // Guardar token y datos básicos
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                // Redirigir según rol
+                const role = data.user.role;
+                if (role === 'admin') window.location.href = 'admin.html';
+                else if (role === 'coach') window.location.href = 'dashboard-coach.html';
+                else window.location.href = 'dashboard-usuario.html';
+            } catch (error) {
+                document.getElementById('generalError').textContent = error.message;
+                document.getElementById('generalError').classList.remove('d-none');
+            }
         });
     </script>
 </body>
+
 </html>

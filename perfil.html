@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - SportClub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .error-message {
+            color: #dc3545;
+            font-size: 0.85rem;
+        }
+
+        .input-error {
+            border-color: #dc3545;
+        }
+
+        .badge-role {
+            padding: 0.35rem 0.65rem;
+            border-radius: 50rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .badge-admin {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .badge-coach {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .badge-user {
+            background-color: #198754;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="logo-container"><img src="img/logo.png" alt="Logo" class="logo-img"></div>
+        <nav><a href="dashboard-usuario.html">Inicio</a><a href="perfil.html">Perfil</a><a href="#"
+                id="logoutBtn">Cerrar sesión</a></nav>
+    </header>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div class="card shadow">
+                    <div class="card-header bg-dark text-white">Mi Perfil</div>
+                    <div class="card-body">
+                        <div id="perfilInfo">
+                            <p><strong>Nombre:</strong> <span id="displayName"></span></p>
+                            <p><strong>Email:</strong> <span id="displayEmail"></span></p>
+                            <p><strong>Rol:</strong> <span id="displayRole" class="badge-role"></span></p>
+                            <p><strong>Fecha de nacimiento:</strong> <span id="displayBirth"></span></p>
+                            <button id="editProfileBtn" class="btn btn-primary">Editar Perfil</button>
+                            <button id="changePasswordBtn" class="btn btn-secondary">Cambiar Contraseña</button>
+                        </div>
+                        <div id="editProfileForm" style="display:none;">
+                            <h5>Editar datos personales</h5>
+                            <div class="mb-3">
+                                <label>Nombre completo</label>
+                                <input type="text" id="editName" class="form-control">
+                                <div class="error-message" id="editNameError"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label>Fecha de nacimiento</label>
+                                <input type="date" id="editBirth" class="form-control">
+                            </div>
+                            <button id="saveProfileBtn" class="btn btn-success">Guardar cambios</button>
+                            <button id="cancelEditBtn" class="btn btn-secondary">Cancelar</button>
+                            <div id="profileMessage" class="alert mt-2 d-none"></div>
+                        </div>
+                        <div id="changePwdForm" style="display:none;">
+                            <h5>Cambiar contraseña</h5>
+                            <div class="mb-3">
+                                <label>Contraseña actual</label>
+                                <input type="password" id="currentPwd" class="form-control">
+                                <div class="error-message" id="currentPwdError"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label>Nueva contraseña (mínimo 8 caracteres)</label>
+                                <input type="password" id="newPwd" class="form-control">
+                                <div class="error-message" id="newPwdError"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label>Confirmar nueva contraseña</label>
+                                <input type="password" id="confirmNewPwd" class="form-control">
+                                <div class="error-message" id="confirmPwdError"></div>
+                            </div>
+                            <button id="savePwdBtn" class="btn btn-warning">Guardar contraseña</button>
+                            <button id="cancelPwdBtn" class="btn btn-secondary">Cancelar</button>
+                            <div id="pwdMessage" class="alert mt-2 d-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let currentUser = null;
+
+        function getToken() { return localStorage.getItem('token'); }
+        function logout() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; }
+
+        async function fetchUserData() {
+            const token = getToken();
+            if (!token) return logout();
+            try {
+                const res = await fetch(`${API_URL}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error('Sesión expirada');
+                currentUser = await res.json();
+                displayUser(currentUser);
+            } catch (err) { logout(); }
+        }
+
+        function displayUser(user) {
+            document.getElementById('displayName').textContent = user.full_name;
+            document.getElementById('displayEmail').textContent = user.email;
+            const roleSpan = document.getElementById('displayRole');
+            roleSpan.textContent = user.role;
+            roleSpan.className = `badge-role badge-${user.role}`;
+            let birth = user.birth_date ? new Date(user.birth_date).toLocaleDateString('es-ES') : 'No especificada';
+            document.getElementById('displayBirth').textContent = birth;
+        }
+
+        document.getElementById('editProfileBtn').onclick = () => {
+            document.getElementById('editProfileForm').style.display = 'block';
+            document.getElementById('editName').value = currentUser.full_name;
+            document.getElementById('editBirth').value = currentUser.birth_date ? currentUser.birth_date.split('T')[0] : '';
+        };
+        document.getElementById('cancelEditBtn').onclick = () => {
+            document.getElementById('editProfileForm').style.display = 'none';
+            document.getElementById('profileMessage').classList.add('d-none');
+        };
+        document.getElementById('saveProfileBtn').onclick = async () => {
+            const newName = document.getElementById('editName').value.trim();
+            const newBirth = document.getElementById('editBirth').value;
+            if (!newName) {
+                document.getElementById('editNameError').textContent = 'El nombre es obligatorio';
+                return;
+            }
+            const token = getToken();
+            try {
+                const res = await fetch(`${API_URL}/auth/me`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ full_name: newName, birth_date: newBirth })
+                });
+                if (!res.ok) throw new Error('Error al actualizar');
+                const updated = await res.json();
+                currentUser = updated.user;
+                displayUser(currentUser);
+                document.getElementById('editProfileForm').style.display = 'none';
+                showMessage('profileMessage', 'Perfil actualizado correctamente', 'success');
+            } catch (err) {
+                showMessage('profileMessage', err.message, 'danger');
+            }
+        };
+        document.getElementById('changePasswordBtn').onclick = () => {
+            document.getElementById('changePwdForm').style.display = 'block';
+        };
+        document.getElementById('cancelPwdBtn').onclick = () => {
+            document.getElementById('changePwdForm').style.display = 'none';
+            document.getElementById('pwdMessage').classList.add('d-none');
+        };
+        document.getElementById('savePwdBtn').onclick = async () => {
+            let valid = true;
+            const current = document.getElementById('currentPwd').value;
+            const newPwd = document.getElementById('newPwd').value;
+            const confirm = document.getElementById('confirmNewPwd').value;
+            if (!current) { showError('currentPwdError', 'Contraseña actual requerida'); valid = false; }
+            if (!newPwd) { showError('newPwdError', 'Nueva contraseña requerida'); valid = false; }
+            else if (newPwd.length < 8) { showError('newPwdError', 'Mínimo 8 caracteres'); valid = false; }
+            if (newPwd !== confirm) { showError('confirmPwdError', 'No coinciden'); valid = false; }
+            if (!valid) return;
+            const token = getToken();
+            try {
+                const res = await fetch(`${API_URL}/auth/me/password`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ current_password: current, new_password: newPwd })
+                });
+                if (!res.ok) throw new Error('Error al cambiar contraseña');
+                showMessage('pwdMessage', 'Contraseña actualizada correctamente', 'success');
+                setTimeout(() => { document.getElementById('changePwdForm').style.display = 'none'; }, 1500);
+            } catch (err) { showMessage('pwdMessage', err.message, 'danger'); }
+        };
+        function showMessage(elementId, msg, type) {
+            const div = document.getElementById(elementId);
+            div.textContent = msg;
+            div.className = `alert alert-${type} mt-2`;
+            div.classList.remove('d-none');
+            setTimeout(() => div.classList.add('d-none'), 3000);
+        }
+        function showError(elementId, msg) { document.getElementById(elementId).textContent = msg; }
+        document.getElementById('logoutBtn').onclick = (e) => { e.preventDefault(); logout(); };
+        fetchUserData();
+    </script>
+</body>
+
+</html>

@@ -73,14 +73,14 @@
             window.location.href = 'login.html';
         }
 
-        // Obtener datos del usuario desde /api/auth/me
         async function loadUserData() {
             try {
                 const res = await fetch(`${API_URL}/auth/me`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error('No autorizado');
-                const user = await res.json();
+                const result = await res.json();
+                const user = result.data;  // Extraer data
                 document.getElementById('userName').textContent = user.full_name.split(' ')[0];
                 document.getElementById('displayName').textContent = user.full_name;
                 document.getElementById('displayEmail').textContent = user.email;
@@ -91,7 +91,6 @@
         }
         loadUserData();
 
-        // Editar perfil redirige a perfil.html
         document.getElementById('editProfileBtn').onclick = () => {
             window.location.href = 'perfil.html';
         };

@@ -106,18 +106,20 @@
         const API_URL = 'http://localhost:3000/api';
         let currentUser = null;
 
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
         function getToken() { return localStorage.getItem('token'); }
-        function logout() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; }
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 
         async function fetchUserData() {
-            const token = getToken();
-            if (!token) return logout();
             try {
                 const res = await fetch(`${API_URL}/auth/me`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
                 });
                 if (!res.ok) throw new Error('Sesión expirada');
-                currentUser = await res.json();
+                const result = await res.json();
+                currentUser = result.data;
                 displayUser(currentUser);
             } catch (err) { logout(); }
         }
@@ -148,16 +150,15 @@
                 document.getElementById('editNameError').textContent = 'El nombre es obligatorio';
                 return;
             }
-            const token = getToken();
             try {
                 const res = await fetch(`${API_URL}/auth/me`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
                     body: JSON.stringify({ full_name: newName, birth_date: newBirth })
                 });
                 if (!res.ok) throw new Error('Error al actualizar');
-                const updated = await res.json();
-                currentUser = updated.user;
+                const result = await res.json();
+                currentUser = result.data;
                 displayUser(currentUser);
                 document.getElementById('editProfileForm').style.display = 'none';
                 showMessage('profileMessage', 'Perfil actualizado correctamente', 'success');
@@ -177,16 +178,16 @@
             const current = document.getElementById('currentPwd').value;
             const newPwd = document.getElementById('newPwd').value;
             const confirm = document.getElementById('confirmNewPwd').value;
-            if (!current) { showError('currentPwdError', 'Contraseña actual requerida'); valid = false; }
-            if (!newPwd) { showError('newPwdError', 'Nueva contraseña requerida'); valid = false; }
-            else if (newPwd.length < 8) { showError('newPwdError', 'Mínimo 8 caracteres'); valid = false; }
-            if (newPwd !== confirm) { showError('confirmPwdError', 'No coinciden'); valid = false; }
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            if (!current) { document.getElementById('currentPwdError').textContent = 'Contraseña actual requerida'; valid = false; }
+            if (!newPwd) { document.getElementById('newPwdError').textContent = 'Nueva contraseña requerida'; valid = false; }
+            else if (newPwd.length < 8) { document.getElementById('newPwdError').textContent = 'Mínimo 8 caracteres'; valid = false; }
+            if (newPwd !== confirm) { document.getElementById('confirmPwdError').textContent = 'No coinciden'; valid = false; }
             if (!valid) return;
-            const token = getToken();
             try {
                 const res = await fetch(`${API_URL}/auth/me/password`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
                     body: JSON.stringify({ current_password: current, new_password: newPwd })
                 });
                 if (!res.ok) throw new Error('Error al cambiar contraseña');
@@ -201,7 +202,6 @@
             div.classList.remove('d-none');
             setTimeout(() => div.classList.add('d-none'), 3000);
         }
-        function showError(elementId, msg) { document.getElementById(elementId).textContent = msg; }
         document.getElementById('logoutBtn').onclick = (e) => { e.preventDefault(); logout(); };
         fetchUserData();
     </script>

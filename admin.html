@@ -105,14 +105,14 @@
         let usersList = [];
         let editingId = null;
 
-        // Verificar token y rol
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
 
+        // Verificar rol admin
         fetch(`${API_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } })
             .then(res => res.json())
-            .then(user => {
-                if (user.role !== 'admin') window.location.href = 'dashboard-usuario.html';
+            .then(result => {
+                if (result.data.role !== 'admin') window.location.href = 'dashboard-usuario.html';
             })
             .catch(() => window.location.href = 'login.html');
 
@@ -123,18 +123,21 @@
             const token = getToken();
             const res = await fetch(`${API_URL}/users`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!res.ok) return logout();
-            const users = await res.json();
+            const result = await res.json();
+            const users = result.data;  // Extraer array de usuarios
             usersList = users;
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
             users.forEach(u => {
                 const date = new Date(u.created_at).toLocaleDateString('es-ES');
                 tbody.innerHTML += `<tr>
-                    <td>${u.id}</td><td>${u.full_name}</td><td>${u.email}</td>
+                    <td>${u.id}</td>
+                    <td>${u.full_name}</td>
+                    <td>${u.email}</td>
                     <td><span class="badge badge-${u.role}">${u.role}</span></td>
                     <td>${date}</td>
                     <td><button class="btn btn-sm btn-warning" onclick="editUser(${u.id})">Editar</button> <button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">Eliminar</button></td>
-                </table>`;
+                </tr>`;
             });
         }
 

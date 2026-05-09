@@ -24,14 +24,34 @@
             color: #dc3545;
             font-size: 0.85rem;
         }
+
+        .avatar-mini {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-left: 10px;
+            border: 1px solid #F2B705;
+        }
+
+        .nav-avatar {
+            display: inline-flex;
+            align-items: center;
+        }
     </style>
 </head>
 
 <body>
     <header class="main-header">
         <div class="logo-container"><img src="img/logo.png" alt="Logo" class="logo-img"></div>
-        <nav><a href="admin.html">Usuarios</a><a href="perfil.html">Mi Perfil</a><a href="#" id="logoutAdmin">Cerrar
-                sesión</a></nav>
+        <nav class="nav-avatar">
+            <a href="admin.html">Usuarios</a>
+            <a href="perfil.html">Mi Perfil</a>
+            <a href="#" id="logoutAdmin">Cerrar sesión</a>
+            <img id="avatarNav" class="avatar-mini" src="" style="display:none;">
+            <div id="avatarPlaceholderNav" class="avatar-mini"
+                style="display:flex; align-items:center; justify-content:center; background:#e9ecef;">📷</div>
+        </nav>
     </header>
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -108,23 +128,38 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
 
-        // Verificar rol admin
+        function loadAvatar(email) {
+            const stored = localStorage.getItem(`avatar_${email}`);
+            const avatarImg = document.getElementById('avatarNav');
+            const placeholder = document.getElementById('avatarPlaceholderNav');
+            if (stored && stored.startsWith('data:image')) {
+                avatarImg.src = stored;
+                avatarImg.style.display = 'inline-block';
+                placeholder.style.display = 'none';
+            } else {
+                avatarImg.style.display = 'none';
+                placeholder.style.display = 'flex';
+            }
+        }
+
+        // Verificar rol admin y cargar avatar
         fetch(`${API_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } })
             .then(res => res.json())
             .then(result => {
                 if (result.data.role !== 'admin') window.location.href = 'dashboard-usuario.html';
+                loadAvatar(result.data.email);
             })
-            .catch(() => window.location.href = 'login.html');
+            .catch(() => { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; });
 
         function getToken() { return localStorage.getItem('token'); }
-        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+        function logout() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; }
 
         async function loadUsers() {
             const token = getToken();
             const res = await fetch(`${API_URL}/users`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!res.ok) return logout();
             const result = await res.json();
-            const users = result.data;  // Extraer array de usuarios
+            const users = result.data;
             usersList = users;
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';

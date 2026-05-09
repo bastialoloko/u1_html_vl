@@ -38,26 +38,83 @@
             background-color: #198754;
             color: white;
         }
+
+        .avatar-img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #F2B705;
+            margin-bottom: 1rem;
+        }
+
+        .avatar-placeholder {
+            width: 120px;
+            height: 120px;
+            background-color: #e9ecef;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #6c757d;
+            margin-bottom: 1rem;
+            border: 3px solid #F2B705;
+        }
+
+        .profile-card {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+
+            .avatar-img,
+            .avatar-placeholder {
+                width: 80px;
+                height: 80px;
+            }
+        }
     </style>
 </head>
 
 <body>
     <header class="main-header">
         <div class="logo-container"><img src="img/logo.png" alt="Logo" class="logo-img"></div>
-        <nav><a href="dashboard-usuario.html">Inicio</a><a href="perfil.html">Perfil</a><a href="#"
-                id="logoutBtn">Cerrar sesión</a></nav>
+        <nav><a href="#" id="backHomeLink">Inicio</a><a href="perfil.html">Perfil</a><a href="#" id="logoutBtn">Cerrar
+                sesión</a></nav>
     </header>
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-6 offset-md-3">
-                <div class="card shadow">
-                    <div class="card-header bg-dark text-white">Mi Perfil</div>
-                    <div class="card-body">
-                        <div id="perfilInfo">
-                            <p><strong>Nombre:</strong> <span id="displayName"></span></p>
-                            <p><strong>Email:</strong> <span id="displayEmail"></span></p>
+    <div class="container mt-4 profile-card">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">Mi Perfil</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Columna izquierda: foto y datos resumen -->
+                    <div class="col-md-3 text-center mb-4">
+                        <div id="avatarContainer">
+                            <img id="avatarImg" class="avatar-img" src="" alt="Foto de perfil" style="display:none;">
+                            <div id="avatarPlaceholder" class="avatar-placeholder">📷</div>
+                        </div>
+                        <input type="file" id="avatarInput" accept="image/jpeg,image/png" style="display:none;">
+                        <button id="changeAvatarBtn" class="btn btn-sm btn-outline-warning mt-2">Cambiar foto</button>
+                        <div class="mt-3">
                             <p><strong>Rol:</strong> <span id="displayRole" class="badge-role"></span></p>
-                            <p><strong>Fecha de nacimiento:</strong> <span id="displayBirth"></span></p>
+                            <p><strong>Email:</strong> <span id="displayEmail"></span></p>
+                        </div>
+                    </div>
+                    <!-- Columna derecha: datos editables y seguridad, más ancha -->
+                    <div class="col-md-9">
+                        <div id="perfilInfo">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nombre completo</label>
+                                <p id="displayName" class="border p-2 rounded bg-light"></p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Fecha de nacimiento</label>
+                                <p id="displayBirth" class="border p-2 rounded bg-light"></p>
+                            </div>
                             <button id="editProfileBtn" class="btn btn-primary">Editar Perfil</button>
                             <button id="changePasswordBtn" class="btn btn-secondary">Cambiar Contraseña</button>
                         </div>
@@ -110,7 +167,42 @@
         if (!token) window.location.href = 'login.html';
 
         function getToken() { return localStorage.getItem('token'); }
-        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        function loadAvatar(email) {
+            const stored = localStorage.getItem(`avatar_${email}`);
+            if (stored && stored.startsWith('data:image')) {
+                document.getElementById('avatarImg').src = stored;
+                document.getElementById('avatarImg').style.display = 'block';
+                document.getElementById('avatarPlaceholder').style.display = 'none';
+            } else {
+                document.getElementById('avatarImg').style.display = 'none';
+                document.getElementById('avatarPlaceholder').style.display = 'flex';
+            }
+        }
+
+        function saveAvatar(email, base64) {
+            localStorage.setItem(`avatar_${email}`, base64);
+            loadAvatar(email);
+        }
+
+        document.getElementById('changeAvatarBtn').onclick = () => {
+            document.getElementById('avatarInput').click();
+        };
+        document.getElementById('avatarInput').onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                const base64 = ev.target.result;
+                saveAvatar(currentUser.email, base64);
+            };
+            reader.readAsDataURL(file);
+        };
 
         async function fetchUserData() {
             try {
@@ -121,19 +213,37 @@
                 const result = await res.json();
                 currentUser = result.data;
                 displayUser(currentUser);
+                loadAvatar(currentUser.email);
             } catch (err) { logout(); }
         }
 
         function displayUser(user) {
-            document.getElementById('displayName').textContent = user.full_name;
-            document.getElementById('displayEmail').textContent = user.email;
+            document.getElementById('displayName').innerHTML = escapeHtml(user.full_name);
+            document.getElementById('displayEmail').innerHTML = escapeHtml(user.email);
             const roleSpan = document.getElementById('displayRole');
             roleSpan.textContent = user.role;
             roleSpan.className = `badge-role badge-${user.role}`;
             let birth = user.birth_date ? new Date(user.birth_date).toLocaleDateString('es-ES') : 'No especificada';
-            document.getElementById('displayBirth').textContent = birth;
+            document.getElementById('displayBirth').innerHTML = escapeHtml(birth);
         }
 
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function (m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        document.getElementById('backHomeLink').onclick = (e) => {
+            e.preventDefault();
+            const role = currentUser?.role;
+            if (role === 'admin') window.location.href = 'admin.html';
+            else if (role === 'coach') window.location.href = 'dashboard-coach.html';
+            else window.location.href = 'dashboard-usuario.html';
+        };
         document.getElementById('editProfileBtn').onclick = () => {
             document.getElementById('editProfileForm').style.display = 'block';
             document.getElementById('editName').value = currentUser.full_name;
@@ -178,7 +288,7 @@
             const current = document.getElementById('currentPwd').value;
             const newPwd = document.getElementById('newPwd').value;
             const confirm = document.getElementById('confirmNewPwd').value;
-            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            document.querySelectorAll('#changePwdForm .error-message').forEach(el => el.textContent = '');
             if (!current) { document.getElementById('currentPwdError').textContent = 'Contraseña actual requerida'; valid = false; }
             if (!newPwd) { document.getElementById('newPwdError').textContent = 'Nueva contraseña requerida'; valid = false; }
             else if (newPwd.length < 8) { document.getElementById('newPwdError').textContent = 'Mínimo 8 caracteres'; valid = false; }

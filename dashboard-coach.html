@@ -19,16 +19,39 @@
         .perfil-coach .btn:hover {
             background: #1b5e20;
         }
+
+        .avatar-mini {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-left: 10px;
+            border: 1px solid #F2B705;
+        }
+
+        .nav-avatar {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
     </style>
 </head>
 
 <body class="perfil-coach">
     <header class="main-header">
         <div class="logo-container"><img src="img/logo.png" alt="Logo" class="logo-img"></div>
-        <nav>
+        <nav class="nav-avatar">
             <a href="dashboard-coach.html">Inicio</a>
             <a href="perfil.html">Mi Perfil</a>
             <a href="#" id="logoutLink">Cerrar sesión</a>
+            <img id="avatarNav" class="avatar-mini" src="" style="display:none;">
+            <div id="avatarPlaceholderNav" class="avatar-mini"
+                style="display:flex; align-items:center; justify-content:center; background:#e9ecef;">📷</div>
         </nav>
     </header>
     <div class="dashboard-container">
@@ -66,36 +89,42 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
 
+        function loadAvatar(email) {
+            const stored = localStorage.getItem(`avatar_${email}`);
+            const avatarImg = document.getElementById('avatarNav');
+            const placeholder = document.getElementById('avatarPlaceholderNav');
+            if (stored && stored.startsWith('data:image')) {
+                avatarImg.src = stored;
+                avatarImg.style.display = 'inline-block';
+                placeholder.style.display = 'none';
+            } else {
+                avatarImg.style.display = 'none';
+                placeholder.style.display = 'flex';
+            }
+        }
+
         async function loadCoachData() {
             try {
-                const res = await fetch(`${API_URL}/auth/me`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const res = await fetch(`${API_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
                 if (!res.ok) throw new Error();
                 const result = await res.json();
                 const user = result.data;
                 document.getElementById('coachName').textContent = user.full_name;
-                // Opcional: cargar alumnos (endpoint /api/users?role=user)
-                const alumnosRes = await fetch(`${API_URL}/users?role=user`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                loadAvatar(user.email);
+                // Cargar alumnos (usuarios con rol user)
+                const alumnosRes = await fetch(`${API_URL}/users?role=user`, { headers: { 'Authorization': `Bearer ${token}` } });
                 if (alumnosRes.ok) {
                     const alumnosResult = await alumnosRes.json();
                     const alumnos = alumnosResult.data;
                     const lista = document.getElementById('alumnosList');
                     lista.innerHTML = '';
-                    alumnos.forEach(a => {
-                        lista.innerHTML += `<li>${a.full_name} - ${a.email}</li>`;
-                    });
+                    alumnos.forEach(a => { lista.innerHTML += `<li>${a.full_name} - ${a.email}</li>`; });
                 }
-            } catch (err) {
-                localStorage.clear();
-                window.location.href = 'login.html';
-            }
+            } catch (err) { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; }
         }
         loadCoachData();
         document.getElementById('editProfileBtn').onclick = () => window.location.href = 'perfil.html';
-        function cerrarSesion() { localStorage.clear(); window.location.href = 'login.html'; }
+        function cerrarSesion() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; }
         document.getElementById('logoutBtn').onclick = cerrarSesion;
         document.getElementById('logoutLink').onclick = (e) => { e.preventDefault(); cerrarSesion(); };
     </script>
